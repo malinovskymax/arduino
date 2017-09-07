@@ -1,36 +1,44 @@
 #define LIGHT_PIN 2
+#define START_PHASE "day"
 
-long millisecond_since_light_off = 36000000L; // 0 to 36000000
-long millisecond_since_light_on  = 0L; // 0 to 50400000
+long start_offset_s = 0L; // will be applied to start phase on first cycle
+
+long basic_night_duration_s = 36000L; // 0 to 36000 s
+long basic_day_duration_s   = 50400L; // 0 to 50400 s
+
+int night_duration_correction_s = 0; // 343
+int day_duration_correction_s   = 0; // 480
+
+long night_duration_s = basic_night_duration_s - night_duration_correction_s;
+long day_duration_s   = basic_day_duration_s   - day_duration_correction_s;
+
+long day   = 0L;
+long night = 0L;
 
 void setup() {
+  //Serial.begin(9600);
   pinMode(LIGHT_PIN, OUTPUT);
+
+  if (START_PHASE == "day") {
+    day = day_duration_s - start_offset_s;
+  } else {
+    night = night_duration_s - start_offset_s;
+  }
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
   // tick
-  delay(1);
+  delay(1000);
 
-  // timer switcher
-  if(millisecond_since_light_on == 50400000 && millisecond_since_light_off == 36000000) {
-    millisecond_since_light_on = 0;
-    millisecond_since_light_off = 0;
-  }
-
-  // light switcher
-  if(millisecond_since_light_off == 0) { // it's night, turn light off
-    digitalWrite(LIGHT_PIN, HIGH);
-  } else {                               // it's day, turn light on
+  if(night < night_duration_s) {                 // it's day, turn light on
     digitalWrite(LIGHT_PIN, LOW);
-  }  
-
-  // ticker
-  if(millisecond_since_light_on == 50400000) { // it's night, turn light off and count night time
-    ++millisecond_since_light_off;
-    //Serial.println("tick");
-  } else {                                     // it's day, turn light on and count day time
-    ++millisecond_since_light_on;
+    if(day == 0) {                 // it's the end of the twenty-four hours cycle
+      day   = day_duration_s;
+      night = night_duration_s;
+    }
+    --day;
+  } else {                         // it's night, turn light off
+    digitalWrite(LIGHT_PIN, HIGH);
+    --night;
   }
 }
