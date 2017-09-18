@@ -3,7 +3,7 @@
  String start_phase = "day"; // night or day
  String phase = "";
 
-long start_phase_duration =   17100L; // on the first cycle start phase will be reduced for the given ammount of seconds
+long start_phase_duration =   1200L; // on the first cycle start phase will be reduced for the given ammount of seconds
 
 long basic_night_duration_s = 36000L; // 0 to 36000 s
 long basic_day_duration_s   = 50400L; // 0 to 50400 s
@@ -69,5 +69,5 @@ void loop() {
   }
   Serial.println("--------------------");
     // tick
-  delay(1997);
+  delay(2000);
 }
