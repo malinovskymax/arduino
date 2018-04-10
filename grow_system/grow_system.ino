@@ -3,7 +3,7 @@
 String start_phase = "night"; // night/morning/evening
 String phase       = "";
 
-long start_phase_duration = 780L; // on the first cycle start phase will be reduced for the given ammount of seconds
+long start_phase_duration = 28320L; // seconds, applied on the first cycle
 
 long basic_night_duration_s   = 28800L; // seconds 22 - 6 = 8
 long basic_morning_duration_s = 28800L; // seconds 6 - 14 = 8
@@ -25,7 +25,7 @@ long day     = 0L;
 long evening = 0L;
 long night   = 0L;
 
-bool phase_changed = true;
+bool phase_changed = false;
 
 void setup() {
   Serial.begin(9600);
@@ -39,12 +39,16 @@ void setup() {
   evening = evening_duration_s;
 
   if (start_phase == "morning") {
+    digitalWrite(LIGHT_PIN, LOW);
     morning = start_phase_duration;
   } else if (start_phase == "day") {
+    digitalWrite(LIGHT_PIN, HIGH);
     day = start_phase_duration;
   } else if (start_phase == "evening") {
+    digitalWrite(LIGHT_PIN, LOW);
     evening = start_phase_duration;
   } else {
+    digitalWrite(LIGHT_PIN, HIGH);
     night = start_phase_duration;
   }
 }
