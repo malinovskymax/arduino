@@ -1,9 +1,9 @@
 #define LIGHT_PIN 2
 
-String start_phase = "night"; // night/morning/evening
+String start_phase = "day"; // night/morning/day/evening
 String phase       = "";
 
-long start_phase_duration = 28320L; // seconds, applied on the first cycle
+long start_phase_duration = 20400L; // seconds, applied on the first cycle
 
 long basic_night_duration_s   = 28800L; // seconds 22 - 6 = 8
 long basic_morning_duration_s = 28800L; // seconds 6 - 14 = 8
@@ -94,19 +94,19 @@ void loop() {
     Serial.print(" to ");
     phase_changed = false;
     if (phase == "morning") {
-      digitalWrite(LIGHT_PIN, LOW);
+      digitalWrite(LIGHT_PIN, HIGH);
       phase = "day";
       day   = day_duration_s;
     } else if (phase == "day") {
-      digitalWrite(LIGHT_PIN, HIGH);
+      digitalWrite(LIGHT_PIN, LOW);
       phase   = "evening";
       evening = evening_duration_s;
     } else if (phase == "evening") {
-      digitalWrite(LIGHT_PIN, LOW);
+      digitalWrite(LIGHT_PIN, HIGH);
       phase = "night";
       night = night_duration_s;
     } else {
-      digitalWrite(LIGHT_PIN, HIGH);
+      digitalWrite(LIGHT_PIN, LOW);
       phase = "morning";
       morning = morning_duration_s;
     }
