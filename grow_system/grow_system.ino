@@ -1,7 +1,14 @@
+// TODO: implement summer and winter mode
+// Summer mode requires light turned off when it's day,
+// Winter mode requires light turned on when it's night;
+
+// TODO: implement synchronization with external clock
+// (preferable by bluetooth)
+
 #define LIGHT_PIN 2
 
 // Settings
-String current_time       = "22:30:00";
+String current_time       = "14:35:00";
 
 String morning_start_time = "06:00:00";
 String day_start_time     = "14:00:00";
@@ -10,6 +17,8 @@ String night_start_time   = "22:00:00";
 // Settings END
 
 long current_time_s = 0L;
+
+long day_end_time_s = 86400L;
 
 String phase = "";
 
@@ -20,6 +29,11 @@ long day = 0L;
 long evening = 0L;
 long night = 0L;
 
+long morning_start_time_s = 0L;
+long day_start_time_s = 0L;
+long evening_start_time_s = 0L;
+long night_start_time_s = 0L;
+
 bool phase_changed = false;
 
 long timeToSeconds(String time) {
@@ -29,19 +43,20 @@ long timeToSeconds(String time) {
   return seconds;
 }
 
+void setupCurrentTime() {
+  current_time_s = timeToSeconds(current_time);
+}
+
 void calculatePhases() {
-  if (current_time_s == 0 && !phase_changed) {
-    current_time_s = timeToSeconds(current_time);
-  }
-  long morning_start_time_s = timeToSeconds(morning_start_time);
-  long day_start_time_s = timeToSeconds(day_start_time);
-  long evening_start_time_s = timeToSeconds(evening_start_time);
-  long night_start_time_s = timeToSeconds(night_start_time);
+  morning_start_time_s = timeToSeconds(morning_start_time);
+  day_start_time_s = timeToSeconds(day_start_time);
+  evening_start_time_s = timeToSeconds(evening_start_time);
+  night_start_time_s = timeToSeconds(night_start_time);
 
   morning = night_start_time_s - morning_start_time_s;
   day = evening_start_time_s - day_start_time_s;
   evening = night_start_time_s - evening_start_time_s;
-  night = morning_start_time_s - night_start_time_s;
+  night  = day_end_time_s - night_start_time_s + morning_start_time_s;
 
   if (current_time_s > morning_start_time_s && current_time_s < day_start_time_s) {
     phase = "morning";
@@ -57,29 +72,23 @@ void calculatePhases() {
     digitalWrite(LIGHT_PIN, LOW);
   } else {
     phase = "night";
-    night = morning_start_time_s - current_time_s;
+    night = day_end_time_s - current_time_s + morning_start_time_s;
     digitalWrite(LIGHT_PIN, HIGH);
   }
-}
-
-void swithPhase() {
-  Serial.print("PHASE_CHANGED ");
-  Serial.print("from ");
-  Serial.print(phase);
-  Serial.print(" to ");
-  calculatePhases();
-  phase_changed = false;
-  Serial.println(phase);
 }
 
 void setup() {
   Serial.begin(9600);
   pinMode(LIGHT_PIN, OUTPUT);
 
+  setupCurrentTime();
   calculatePhases();
 }
 
 void loop() {
+  Serial.print("current_time_s ");
+  Serial.println(current_time_s);
+
   Serial.print(phase);
   Serial.print(" seconds left: ");
 
@@ -90,38 +99,44 @@ void loop() {
   if (phase == "morning") {
     if (morning > 0) {
       Serial.println(morning);
-      morning -= 2;
+      morning -= 1;
     } else {
       phase_changed = true;
     }
   } else if (phase == "day") {
     if (day > 0) {
       Serial.println(day);
-      day -= 2;
+      day -= 1;
     } else {
       phase_changed = true;
     }
   } else if (phase == "evening") {
     if (evening > 0) {
       Serial.println(evening);
-      evening -= 2;
+      evening -= 1;
     } else {
       phase_changed = true;
     }
   } else { // night
     if (night > 0) {
       Serial.println(night);
-      night -= 2;
+      night -= 1;
     } else {
       phase_changed = true;
     }
   }
 
-  current_time_s += 2;
+  current_time_s += 1;
 
   if (phase_changed) {
-
+    phase_changed = false;
+    Serial.print("PHASE_CHANGED ");
+    Serial.print("from ");
+    Serial.print(phase);
+    Serial.print(" to ");
+    calculatePhases();
+    Serial.println(phase);
   }
   Serial.println("--------------------");
-  delay(2000);
+  delay(1000);
 }
