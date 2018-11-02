@@ -1,14 +1,11 @@
-// TODO: implement summer and winter mode
-// Summer mode requires light turned off when it's day,
-// Winter mode requires light turned on when it's night;
-
 // TODO: implement synchronization with external clock
 // (preferable by bluetooth)
 
 #define LIGHT_PIN 2
 
 // Settings
-String current_time       = "14:35:00";
+String mode               = "winter"; // Possible modes are: [winter, summer]
+String current_time       = "22:16:00";
 
 String morning_start_time = "06:00:00";
 String day_start_time     = "14:00:00";
@@ -65,7 +62,11 @@ void calculatePhases() {
   } else if (current_time_s > day_start_time_s && current_time_s < evening_start_time_s) {
     phase = "day";
     day = evening_start_time_s - current_time_s;
-    digitalWrite(LIGHT_PIN, HIGH);
+    if (mode == "winter") {
+      digitalWrite(LIGHT_PIN, LOW);
+    } else if (mode == "summer") {
+      digitalWrite(LIGHT_PIN, HIGH);
+    }
   } else if (current_time_s > evening_start_time_s && current_time_s < night_start_time_s) {
     phase = "evening";
     evening = night_start_time_s - current_time_s;
